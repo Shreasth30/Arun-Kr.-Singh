@@ -1,0 +1,212 @@
+document.addEventListener('DOMContentLoaded', () => {
+  
+  // Google Sheets Apps Script Web App URL configuration
+  // Set your deployed Web App URL here to save inquiries to your Google Spreadsheet.
+  const GOOGLE_SHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxDGe7jeEdERzueql-0a_-FQEOFFi5GyZqlN289b_ijMr6E64kfMen2dxqOr71VUA1W/exec';
+
+  /* ==========================================
+     THEME TOGGLE (COLLAR STYLE)
+     ========================================== */
+  const themeToggle = document.getElementById('theme-toggle');
+  const body = document.body;
+
+  // Check saved theme
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    body.classList.add('dark-theme');
+  }
+
+  themeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark-theme');
+    const isDark = body.classList.contains('dark-theme');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+
+  /* ==========================================
+     CUSTOM INVERTING CURSOR
+     ========================================== */
+  const cursorDot = document.getElementById('cursor-dot');
+  const cursorCircle = document.getElementById('cursor-circle');
+  let mouseX = 0, mouseY = 0;
+  let circleX = 0, circleY = 0;
+
+  // Move cursor dot instantly, save coordinates for circle lag
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    
+    // Position dot
+    cursorDot.style.left = `${mouseX}px`;
+    cursorDot.style.top = `${mouseY}px`;
+  });
+
+  // Smooth lerp (interpolation) for the trailing cursor circle
+  function animateCircle() {
+    const ease = 0.15; // Speed of tracking
+    circleX += (mouseX - circleX) * ease;
+    circleY += (mouseY - circleY) * ease;
+
+    cursorCircle.style.left = `${circleX}px`;
+    cursorCircle.style.top = `${circleY}px`;
+
+    requestAnimationFrame(animateCircle);
+  }
+  animateCircle();
+
+  // Add hover state class for clickable items
+  const clickables = document.querySelectorAll('.clickable');
+  clickables.forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      cursorCircle.classList.add('hovering');
+      cursorDot.classList.add('hovering');
+    });
+    item.addEventListener('mouseleave', () => {
+      cursorCircle.classList.remove('hovering');
+      cursorDot.classList.remove('hovering');
+    });
+  });
+
+  /* ==========================================
+     HEADER SCROLL DETECTOR
+     ========================================== */
+  const header = document.querySelector('header');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+
+  /* ==========================================
+     INTERSECTION OBSERVER (REVEAL ON SCROLL)
+     ========================================== */
+  const revealElements = document.querySelectorAll('.timeline-item, .practice-card');
+  const observerOptions = {
+    threshold: 0.15,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target); // Trigger once
+      }
+    });
+  }, observerOptions);
+
+  revealElements.forEach(el => {
+    revealObserver.observe(el);
+  });
+
+  /* ==========================================
+     MOBILE NAVIGATION HAMBURGER
+     ========================================== */
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navLinks.classList.toggle('active');
+  });
+
+  // Close nav on link click (mobile optimization)
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('active');
+    });
+  });
+
+  /* ==========================================
+     MINIMALIST CONTACT FORM SUBMISSION
+     ========================================== */
+  const form = document.getElementById('consultation-form');
+  
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    // Extract input values
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const subject = document.getElementById('subject').value;
+    const message = document.getElementById('message').value;
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    
+    submitBtn.textContent = 'Transmitting...';
+    submitBtn.style.opacity = '0.7';
+    submitBtn.disabled = true;
+    
+    // Fallback to simulation mode if the Web App URL is not configured
+    if (!GOOGLE_SHEET_WEB_APP_URL) {
+      console.warn('Google Sheets Web App URL is not configured. Running in simulation mode.');
+      
+      setTimeout(() => {
+        submitBtn.textContent = 'Submission Received';
+        submitBtn.style.backgroundColor = '#27ae60';
+        submitBtn.style.borderColor = '#27ae60';
+        submitBtn.style.color = '#ffffff';
+        
+        form.reset();
+        
+        setTimeout(() => {
+          submitBtn.textContent = originalText;
+          submitBtn.style.backgroundColor = '';
+          submitBtn.style.borderColor = '';
+          submitBtn.style.color = '';
+          submitBtn.style.opacity = '1';
+          submitBtn.disabled = false;
+        }, 3000);
+        
+      }, 1500);
+      return;
+    }
+
+    // Submit to Google Sheets Web App
+    fetch(GOOGLE_SHEET_WEB_APP_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8' // Send as text/plain to avoid preflight issues in some environments
+      },
+      body: JSON.stringify({ name, email, subject, message })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.status === 'success') {
+        submitBtn.textContent = 'Submission Received';
+        submitBtn.style.backgroundColor = '#27ae60';
+        submitBtn.style.borderColor = '#27ae60';
+        submitBtn.style.color = '#ffffff';
+        
+        form.reset();
+      } else {
+        throw new Error(data.message || 'Submission failed');
+      }
+    })
+    .catch(error => {
+      console.error('Error submitting inquiry to Google Sheets:', error);
+      submitBtn.textContent = 'Submission Failed';
+      submitBtn.style.backgroundColor = '#e74c3c';
+      submitBtn.style.borderColor = '#e74c3c';
+      submitBtn.style.color = '#ffffff';
+    })
+    .finally(() => {
+      setTimeout(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.style.backgroundColor = '';
+        submitBtn.style.borderColor = '';
+        submitBtn.style.color = '';
+        submitBtn.style.opacity = '1';
+        submitBtn.disabled = false;
+      }, 3000);
+    });
+  });
+});
