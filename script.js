@@ -149,7 +149,7 @@ Subject: ${subject}
 Matter Description:
 ${message}`;
     
-    const whatsappUrl = `https://wa.me/919905098231?text=${encodeURIComponent(whatsappText)}`;
+    const whatsappUrl = `https://wa.me/919236545454?text=${encodeURIComponent(whatsappText)}`;
     
     // Open WhatsApp in a new tab immediately to avoid popup blockers
     window.open(whatsappUrl, '_blank');

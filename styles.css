@@ -944,6 +944,16 @@ footer {
   .contact-intro {
     max-width: 100%;
   }
+  
+  /* Disable custom cursor on mobile and restore default cursor */
+  .custom-cursor-dot,
+  .custom-cursor-circle {
+    display: none !important;
+  }
+  
+  body, a, button, input, textarea, select, .clickable, .collar-toggle-container {
+    cursor: auto !important;
+  }
 }
 
 @media (max-width: 768px) {
