@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  
+
   // Google Sheets Apps Script Web App URL configuration
   // Set your deployed Web App URL here to save inquiries to your Google Spreadsheet.
-  const GOOGLE_SHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxDGe7jeEdERzueql-0a_-FQEOFFi5GyZqlN289b_ijMr6E64kfMen2dxqOr71VUA1W/exec';
+  const GOOGLE_SHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxBjN51_lgEA9g0MxetkBM9gaZLghCxyhHYBSSGwzrqBEXfi5al5MCwRtLp56qAe3ag/exec';
 
   /* ==========================================
      THEME TOGGLE (COLLAR STYLE)
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    
+
     // Position dot
     cursorDot.style.left = `${mouseX}px`;
     cursorDot.style.top = `${mouseY}px`;
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ==========================================
-     MINIMALIST CONTACT FORM SUBMISSION
+     WHATSAPP CONTACT FORM SUBMISSION
      ========================================== */
   const form = document.getElementById('consultation-form');
   
@@ -136,69 +136,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     
-    submitBtn.textContent = 'Transmitting...';
+    submitBtn.textContent = 'Opening WhatsApp...';
     submitBtn.style.opacity = '0.7';
     submitBtn.disabled = true;
-    
-    // Fallback to simulation mode if the Web App URL is not configured
-    if (!GOOGLE_SHEET_WEB_APP_URL) {
-      console.warn('Google Sheets Web App URL is not configured. Running in simulation mode.');
-      
-      setTimeout(() => {
-        submitBtn.textContent = 'Submission Received';
-        submitBtn.style.backgroundColor = '#27ae60';
-        submitBtn.style.borderColor = '#27ae60';
-        submitBtn.style.color = '#ffffff';
-        
-        form.reset();
-        
-        setTimeout(() => {
-          submitBtn.textContent = originalText;
-          submitBtn.style.backgroundColor = '';
-          submitBtn.style.borderColor = '';
-          submitBtn.style.color = '';
-          submitBtn.style.opacity = '1';
-          submitBtn.disabled = false;
-        }, 3000);
-        
-      }, 1500);
-      return;
-    }
 
-    // Submit to Google Sheets Web App
-    fetch(GOOGLE_SHEET_WEB_APP_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8' // Send as text/plain to avoid preflight issues in some environments
-      },
-      body: JSON.stringify({ name, email, subject, message })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.status === 'success') {
-        submitBtn.textContent = 'Submission Received';
-        submitBtn.style.backgroundColor = '#27ae60';
-        submitBtn.style.borderColor = '#27ae60';
-        submitBtn.style.color = '#ffffff';
-        
-        form.reset();
-      } else {
-        throw new Error(data.message || 'Submission failed');
-      }
-    })
-    .catch(error => {
-      console.error('Error submitting inquiry to Google Sheets:', error);
-      submitBtn.textContent = 'Submission Failed';
-      submitBtn.style.backgroundColor = '#e74c3c';
-      submitBtn.style.borderColor = '#e74c3c';
+    // Construct WhatsApp Message
+    const whatsappText = `New Consultation Inquiry
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+
+Matter Description:
+${message}`;
+    
+    const whatsappUrl = `https://wa.me/919905098231?text=${encodeURIComponent(whatsappText)}`;
+    
+    // Open WhatsApp in a new tab immediately to avoid popup blockers
+    window.open(whatsappUrl, '_blank');
+    
+    // Optional: Still try to save to Google Sheets in the background (fire and forget)
+    if (GOOGLE_SHEET_WEB_APP_URL) {
+      fetch(GOOGLE_SHEET_WEB_APP_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({ name, email, subject, message })
+      }).catch(err => console.error("Sheets sync failed:", err));
+    }
+    
+    // Reset form UI
+    setTimeout(() => {
+      submitBtn.textContent = 'Submission Sent';
+      submitBtn.style.backgroundColor = '#27ae60';
+      submitBtn.style.borderColor = '#27ae60';
       submitBtn.style.color = '#ffffff';
-    })
-    .finally(() => {
+      
+      form.reset();
+      
       setTimeout(() => {
         submitBtn.textContent = originalText;
         submitBtn.style.backgroundColor = '';
@@ -207,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.style.opacity = '1';
         submitBtn.disabled = false;
       }, 3000);
-    });
+      
+    }, 1500);
   });
 });
