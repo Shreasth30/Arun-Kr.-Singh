@@ -185,4 +185,40 @@ ${message}`;
       
     }, 1500);
   });
+
+  /* ==========================================
+     PRACTICE CARD MOBILE TOGGLE
+     ========================================== */
+  const practiceCards = document.querySelectorAll('.practice-card');
+  practiceCards.forEach(card => {
+    card.addEventListener('click', () => {
+      if (window.innerWidth <= 900) {
+        // Toggle the description card
+        const wasActive = card.classList.contains('show-desc');
+        // Close all cards
+        practiceCards.forEach(c => c.classList.remove('show-desc'));
+        // If it wasn't active, open it
+        if (!wasActive) {
+          card.classList.add('show-desc');
+        }
+      }
+    });
+  });
+
+  /* ==========================================
+     VIEW ALL PRACTICE AREAS TOGGLE
+     ========================================== */
+  const viewAllBtn = document.getElementById('view-all-practice');
+  const practiceGridElement = document.querySelector('.practice-grid');
+  
+  if (viewAllBtn && practiceGridElement) {
+    viewAllBtn.addEventListener('click', () => {
+      practiceGridElement.classList.toggle('expanded');
+      if (practiceGridElement.classList.contains('expanded')) {
+        viewAllBtn.textContent = 'Show Less';
+      } else {
+        viewAllBtn.textContent = 'View All Practice Areas';
+      }
+    });
+  }
 });

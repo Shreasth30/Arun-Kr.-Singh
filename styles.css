@@ -692,6 +692,12 @@ section {
   line-height: 1.7;
 }
 
+.view-all-container {
+  display: none;
+  text-align: center;
+  margin-top: 2rem;
+}
+
 /* ==========================================
    CONTACT SECTION
    ========================================== */
@@ -925,15 +931,65 @@ footer {
   
   /* Practice Grid Mobile Layout */
   .practice-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .practice-grid:not(.expanded) .practice-card:nth-child(n+7) {
+    display: none;
+  }
+  .view-all-container {
+    display: block;
+  }
+  .practice-card {
+    padding: 1.25rem 0.75rem;
+    align-items: center;
+    text-align: center;
   }
   .practice-card.featured {
-    grid-column: span 1;
+    grid-column: span 2;
   }
   .practice-card.featured .practice-image-wrapper {
-    height: 200px;
-    margin-bottom: 2rem;
+    height: 160px;
+    margin-bottom: 1rem;
+  }
+  .practice-image-wrapper {
+    height: 100px;
+    margin-bottom: 0.75rem;
+  }
+  .practice-icon {
+    margin-bottom: 0.75rem;
+  }
+  .practice-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .practice-card h3 {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  .practice-card p {
+    display: none;
+  }
+  
+  .practice-card.show-desc p {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    z-index: 10;
+    padding: 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid var(--border-strong);
+    box-sizing: border-box;
+    margin: 0;
   }
   
   /* Contact Mobile Layout */
